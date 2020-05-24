@@ -6,14 +6,14 @@ import os
 import re
 
 __version__ = '0.9.0'
-__all__ = ('stroll',)
+__all__ = ('wolk',)
 
 
 def dotfile(filename):
     return filename.startswith('.')
 
 
-def stroll(
+def wolk(
     top,
     topdown=True,
     onerror=None,
@@ -21,52 +21,64 @@ def stroll(
     include=None,
     exclude=dotfile,
     directories=False,
+    relative=True,
+    with_root=None,
 ):
     inc = include and _resolve(include)
     exc = _resolve(exclude or ())
 
-    tops = [top] if isinstance(top, (str, Path)) else top
+    roots = [top] if isinstance(top, (str, Path)) else list(top)
+    if relative and with_root is None:
+        with_root = len(roots) != 1
 
-    for top in tops:
-        walk = os.walk(top, topdown, onerror, followlinks)
+    for root in roots:
+        walk = os.walk(root, topdown, onerror, followlinks)
         for directory, sub_dirs, files in walk:
 
+            def results(files):
+                for f in files:
+                    f = os.path.join(directory, f)
+                    if relative:
+                        f = os.path.relpath(f, root)
+
+                    yield (root, f) if with_root else f
+
             def accept(file):
-                args = file, directory, top
+                args = file, directory, root
                 return not exc(*args) and (inc is None or inc(*args))
 
-            for file in files:
-                if accept(file):
-                    yield os.path.join(directory, file)
+            yield from results(f for f in files if accept(f))
 
             if topdown or directories:
-                sub_dirs[:] = (f for f in sub_dirs if accept(f + '/'))
+                subs = (f for f in sub_dirs if accept(f + '/'))
+                if topdown:
+                    sub_dirs[:] = subs
+                    subs = sub_dirs
                 if directories:
-                    for file in sub_dirs:
-                        yield os.path.join(directory, file)
+                    yield from results(subs)
 
 
-def match_python(filename, directory, top):
+def match_python(filename, directory, root):
     if filename.endswith('.py'):
         return True
 
     if not filename.endswith('/'):
         return False
 
-    if directory == top and filename in _PYTHON_ROOT_DIRECTORIES:
+    if directory == root and filename in _PYTHON_ROOT_DIRECTORIES:
         return False
 
     return not any(filename.endswith(d) for d in _PYTHON_DIR_SUFFIXES)
 
 
-python = functools.partial(stroll, include=match_python)
+python = functools.partial(wolk, include=match_python)
 
 
 def _wrap(matcher):
     if isinstance(matcher, str):
         match = re.compile(fnmatch.translate(matcher)).match
 
-        def wrapped(filename, directory, top):
+        def wrapped(filename, directory, root):
             return match(os.path.join(directory, filename))
 
         return wrapped
