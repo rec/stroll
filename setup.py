@@ -1,5 +1,5 @@
 from setuptools import setup
-import safer
+import wlk
 
 _classifiers = [
     'Development Status :: 5 - Production/Stable',
@@ -17,17 +17,17 @@ _classifiers = [
 
 if __name__ == '__main__':
     setup(
-        name='safer',
-        version=safer.__version__,
+        name='wlk',
+        version=wlk.__version__,
         author='Tom Ritchford',
         author_email='tom@swirly.com',
-        url='https://github.com/rec/safer',
+        url='https://github.com/rec/wlk',
         tests_require=['pytest'],
-        py_modules=['safer'],
-        description='A safer file opener',
+        py_modules=['wlk'],
+        description='Better os.walk',
         long_description=open('README.rst').read(),
         license='MIT',
         classifiers=_classifiers,
         keywords=['testing', 'modules'],
-        scripts=['safer.py'],
+        scripts=['wlk.py'],
     )
