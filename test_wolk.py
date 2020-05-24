@@ -1,10 +1,10 @@
 from unittest import TestCase
-import wlk
+import wolk
 
 
 class TestParamCount(TestCase):
     def test_simple(self):
-        count = wlk._param_count
+        count = wolk._param_count
 
         assert count(lambda: 0) == 0
         assert count(lambda a: 0) == 1
@@ -14,7 +14,7 @@ class TestParamCount(TestCase):
             count(lambda a, b, c, d: 0)
 
     def test_var(self):
-        count = wlk._param_count
+        count = wolk._param_count
 
         assert count(lambda *e: 0) == 3
         assert count(lambda a, *e: 0) == 3
@@ -25,7 +25,7 @@ class TestParamCount(TestCase):
             count(lambda a, b, c, d, *e: 0)
 
     def test_default(self):
-        count = wlk._param_count
+        count = wolk._param_count
 
         assert count(lambda a=1: 0) == 1
         assert count(lambda a=1, b=2: 0) == 2

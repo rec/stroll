@@ -1,2 +1,2 @@
-wlk: better os.path.walk
+wolk: better os.path.walk
 -------------------------------

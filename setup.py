@@ -1,5 +1,5 @@
 from setuptools import setup
-import wlk
+import wolk
 
 _classifiers = [
     'Development Status :: 5 - Production/Stable',
@@ -17,17 +17,17 @@ _classifiers = [
 
 if __name__ == '__main__':
     setup(
-        name='wlk',
-        version=wlk.__version__,
+        name='wolk',
+        version=wolk.__version__,
         author='Tom Ritchford',
         author_email='tom@swirly.com',
-        url='https://github.com/rec/wlk',
+        url='https://github.com/rec/wolk',
         tests_require=['pytest'],
-        py_modules=['wlk'],
+        py_modules=['wolk'],
         description='Better os.walk',
         long_description=open('README.rst').read(),
         license='MIT',
         classifiers=_classifiers,
         keywords=['testing', 'modules'],
-        scripts=['wlk.py'],
+        scripts=['wolk.py'],
     )
