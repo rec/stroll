@@ -1,0 +1,117 @@
+## v4.0.0 - 2020-05-12
+
+* Now `safer` caches in memory by default
+
+## v3.1.2 - 2020-05-10
+
+* New `safer.closer()`
+* Now `safer.open()` can also cache in memory
+
+## v3.1.1 - 2020-05-09
+
+* Fix README.rst
+* Add unittest to make sure the .rst renders
+
+## v3.1.0 - 2020-05-09
+
+* New improved safer.writer()
+* In-memory caching
+
+## v3.0.0 - 2020-04-27
+
+* Remove Python 2 support
+* Remove deprecated safer.writer()
+
+## v2.0.5 - 2020-04-24
+
+* Move to production status stable
+
+## v2.0.4 - 2020-04-24
+
+* Correctly handle symlinks (fix #7)
+
+## v2.0.3 - 2020-04-23
+
+* Correctly handle 't' mode (fix #6)
+
+## v2.0.2 - 2020-04-23
+
+* Simplify stream class wrapping
+
+## v2.0.1 - 2020-04-22
+
+* Add a '=' to a title underline in README.rst
+
+## v2.0.0 - 2020-04-21
+
+* New safer.open()
+* Rename create_parent to make_parents
+
+## v1.0.1 - 2020-04-19
+
+* Copy file modes (fix #1)
+* Use tempfile.mkstemp() for tempfiles (fix #3)
+* Better error on opening file descriptor (fix #4)
+
+## v1.0.0 - 2020-04-17
+
+* Out of things to improve
+
+## v0.9.11 - 2020-04-17
+
+* Find a unique temporary filename
+* Rename create_parents to create_parent
+* Improve documentation
+* Allow Python 2.7 tests to work in parallel
+
+## v0.9.10 - 2020-04-16
+
+* Fix README.rst's formatting
+
+## v0.9.9 - 2020-04-16
+
+* More documentation
+* Add a test for doc_safer.py
+
+## v0.9.8 - 2020-04-10
+
+* Rename safer.open() to .writer()
+
+## v0.9.7 - 2020-04-09
+
+* Bump version number
+
+## v0.9.6 - 2020-04-09
+
+* Automatically generated documentation
+
+## v0.9.5 - 2020-04-09
+
+* Support Python 2.7 and 3.4
+* Two bugfixes
+* More documentation
+* Better error checking
+
+## v0.9.4 - 2020-04-08
+
+* Rename to safer
+* Rename safe_printer and safe_writer to printer, writer
+
+## v0.9.3 - 2020-03-17
+
+* New `safe_printer` context
+* More tests
+
+## v0.9.2 - 2020-03-17
+
+* Handle all file opening modes
+* More and better error handling*
+ More documentation
+
+## v0.9.1 - 2020-03-02
+
+* Fix reading README in setup.py
+
+## v0.9.0 - 2020-03-02
+
+* Initial port from gitz
