@@ -1,6 +1,6 @@
+from test import get_help
 import inspect
 import safer
-from test import get_help
 
 README_FILE = 'README.rst'
 
