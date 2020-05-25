@@ -58,20 +58,43 @@ def wolk(
                     yield from results(subs)
 
 
-def match_python(filename, directory, root):
-    if filename.endswith('.py'):
-        return True
+def matcher(f):
+    @functools.wraps(f)
+    def wrapped(*args, **kwargs):
+        @functools.wraps(f)
+        def wrapped2(filename, directory, root):
+            return f(filename, directory, root, *args, **kwargs)
 
-    if not filename.endswith('/'):
-        return False
+        return wrapped2
 
-    if directory == root and filename in _PYTHON_ROOT_DIRECTORIES:
-        return False
-
-    return not any(filename.endswith(d) for d in _PYTHON_DIR_SUFFIXES)
+    return wrapped
 
 
-python = functools.partial(wolk, include=match_python)
+@matcher
+def match(filename, directory, root, *files):
+    return filename in files
+
+
+@matcher
+def match_root(filename, directory, root, *files):
+    return directory == root and filename in files
+
+
+@matcher
+def match_suffix(filename, directory, root, *suffixes):
+    return any(filename.endswith(s) for s in suffixes)
+
+
+EXCLUDE_PYTHON = (
+    dotfile,
+    match_root('build/', 'dist/', 'htmlcov/'),
+    match_suffix('.egg-info/'),
+    match('__pycache__/'),
+)
+
+
+python = functools.partial(wolk, exclude=EXCLUDE_PYTHON)
+python_source = functools.partial(wolk, include='*.py', exclude=EXCLUDE_PYTHON)
 
 
 def _wrap(matcher):
@@ -115,7 +138,7 @@ def _resolve(r):
         r = (r,)
 
     matchers = [_wrap(f) for f in r]
-    return lambda *a: all(m(*a) for m in matchers)
+    return lambda *a: any(m(*a) for m in matchers)
 
 
 def neg(fn):
@@ -124,7 +147,3 @@ def neg(fn):
         return not fn(*args)
 
     return wrapped
-
-
-_PYTHON_ROOT_DIRECTORIES = 'build/', 'dist/', 'htmlcov/'
-_PYTHON_DIR_SUFFIXES = ('.egg-info/',)
