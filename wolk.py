@@ -27,21 +27,29 @@ def wolk(
     inc = include and _resolve(include)
     exc = _resolve(exclude or ())
 
-    roots = [top] if isinstance(top, (str, Path)) else list(top)
+    if isinstance(top, str):
+        roots = [top]
+    elif isinstance(top, Path):
+        roots = [str(top)]
     if relative and with_root is None:
         with_root = len(roots) != 1
 
     for root in roots:
         walk = os.walk(root, topdown, onerror, followlinks)
+        root = Path(root)
+
         for directory, sub_dirs, files in walk:
+            directory = Path(directory)
 
             def results(files):
                 for f in files:
-                    f = os.path.join(directory, f)
+                    f = directory / f
                     if relative:
-                        f = os.path.relpath(f, root)
-
-                    yield (root, f) if with_root else f
+                        f = f.relative_to(root)
+                    if with_root:
+                        yield root, f
+                    else:
+                        yield f
 
             def accept(file):
                 args = file, directory, root

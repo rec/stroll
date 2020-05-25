@@ -8,12 +8,14 @@ class TestWolk(TestCase):
     def test_simple(self):
         with tdir.tdir('a', 'b', 'c', '.not') as td:
             actual = sorted(wolk.wolk(td, relative=True))
+            actual = [str(p) for p in actual]
             expected = ['a', 'b', 'c']
             assert actual == expected
 
     def test_python(self):
         root = Path(__file__).parent
         actual = sorted(wolk.python_source(root, relative=True))
+        actual = [str(p) for p in actual]
         expected = ['setup.py', 'test_wolk.py', 'wolk.py']
         assert actual == expected
 
