@@ -12,7 +12,8 @@ class TestWolk(TestCase):
             assert actual == expected
 
     def test_python(self):
-        actual = sorted(wolk.python_source(Path(__file__).parent))
+        root = Path(__file__).parent
+        actual = sorted(wolk.python_source(root, relative=True))
         expected = ['setup.py', 'test_wolk.py', 'wolk.py']
         assert actual == expected
 

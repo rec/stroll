@@ -21,7 +21,7 @@ def wolk(
     include=None,
     exclude=dotfile,
     directories=False,
-    relative=True,
+    relative=False,
     with_root=None,
 ):
     inc = include and _resolve(include)
