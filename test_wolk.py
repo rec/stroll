@@ -6,7 +6,7 @@ import wolk
 
 class TestWolk(TestCase):
     def test_simple(self):
-        with tdir.tdir('a', 'b', 'c', '.not') as td:
+        with tdir('a', 'b', 'c', '.not') as td:
             actual = sorted(wolk.wolk(td, relative=True))
             actual = [str(p) for p in actual]
             expected = ['a', 'b', 'c']
