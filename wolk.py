@@ -90,7 +90,7 @@ def match_root(filename, directory, root, *files):
 
 @matcher
 def match_suffix(filename, directory, root, *suffixes):
-    return any(filename.endswith(s) for s in suffixes)
+    return filename.endswith(suffixes)
 
 
 EXCLUDE_PYTHON = (
