@@ -1,3 +1,4 @@
+"""Better directory tree generator"""
 from pathlib import Path
 import clod
 import fnmatch
@@ -7,7 +8,7 @@ import os
 import re
 
 __version__ = '0.9.0'
-__all__ = ('wolk',)
+__all__ = 'wolk', 'inv', 'python', 'python_source'
 
 
 def dotfile(filename):
@@ -24,14 +25,12 @@ def wolk(
     directories=False,
     relative=False,
     with_root=None,
+    sort=True,
 ):
     inc = include and _resolve(include)
     exc = _resolve(exclude or ())
 
-    if isinstance(top, str):
-        roots = [top]
-    elif isinstance(top, Path):
-        roots = [str(top)]
+    roots = [top] if isinstance(top, (str, Path)) else top
 
     if relative and with_root is None:
         with_root = len(roots) != 1
@@ -41,6 +40,10 @@ def wolk(
         root = Path(root)
 
         for directory, sub_dirs, files in walk:
+            if sort:
+                sub_dirs.sort()
+                files.sort()
+
             directory = Path(directory)
 
             def results(files):
@@ -49,9 +52,9 @@ def wolk(
                     if relative:
                         f = f.relative_to(root)
                     if with_root:
-                        yield root, f
+                        yield str(root), str(f)
                     else:
-                        yield f
+                        yield str(f)
 
             def accept(file):
                 args = file, directory, root
@@ -116,9 +119,7 @@ def _wrap(matcher):
 
         return wrapped
 
-    if not callable(matcher):
-        raise ValueError('Do not understand %s' % matcher)
-
+    assert callable(matcher)
     p = _param_count(matcher)
     if p == 3:
         return matcher
@@ -129,7 +130,8 @@ def _param_count(fn, n=3):
     i = -1
 
     for i, p in enumerate(inspect.signature(fn).parameters.values()):
-        if p.kind in (p.KEYWORD_ONLY, p.VAR_KEYWORD):
+        if p.kind in (p.KEYWORD_ONLY, p.VAR_KEYWORD):  # pragma: no cover
+
             return i
 
         if p.kind is p.VAR_POSITIONAL:
@@ -151,7 +153,7 @@ def _resolve(r):
     return lambda *a: any(m(*a) for m in matchers)
 
 
-def neg(fn):
+def inv(fn):
     @functools.wraps(fn)
     def wrapped(*args):
         return not fn(*args)

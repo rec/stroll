@@ -7,7 +7,7 @@ source = wolk
 
 [report]
 
-fail_under = 85
+fail_under = 100
 skip_covered = True
 
 exclude_lines =
