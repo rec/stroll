@@ -1,4 +1,5 @@
 from pathlib import Path
+import clod
 import fnmatch
 import functools
 import inspect
@@ -31,6 +32,7 @@ def wolk(
         roots = [top]
     elif isinstance(top, Path):
         roots = [str(top)]
+
     if relative and with_root is None:
         with_root = len(roots) != 1
 
@@ -68,14 +70,14 @@ def wolk(
 
 def matcher(f):
     @functools.wraps(f)
-    def wrapped(*args, **kwargs):
+    def outer(*args):
         @functools.wraps(f)
-        def wrapped2(filename, directory, root):
-            return f(filename, directory, root, *args, **kwargs)
+        def inner(filename, directory, root):
+            return f(filename, directory, root, *args)
 
-        return wrapped2
+        return inner
 
-    return wrapped
+    return outer
 
 
 @matcher
@@ -155,3 +157,6 @@ def neg(fn):
         return not fn(*args)
 
     return wrapped
+
+
+clod(wolk, __name__)

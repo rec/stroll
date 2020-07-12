@@ -7,7 +7,7 @@ import wolk
 class TestWolk(TestCase):
     def test_simple(self):
         with tdir('a', 'b', 'c', '.not') as td:
-            actual = sorted(wolk.wolk(td, relative=True))
+            actual = sorted(wolk(td, relative=True))
             actual = [str(p) for p in actual]
             expected = ['a', 'b', 'c']
             assert actual == expected

@@ -1,5 +1,5 @@
+from pathlib import Path
 from setuptools import setup
-import wolk
 
 _classifiers = [
     'Development Status :: 5 - Production/Stable',
@@ -15,10 +15,19 @@ _classifiers = [
     'Topic :: Utilities',
 ]
 
+REQUIREMENTS = Path('requirements.txt').read_text().splitlines()
+
+
+def _version():
+    with open('wolk.py') as fp:
+        line = next(i for i in fp if i.startswith('__version__'))
+        return line.strip().split()[-1].strip("'")
+
+
 if __name__ == '__main__':
     setup(
         name='wolk',
-        version=wolk.__version__,
+        version=_version(),
         author='Tom Ritchford',
         author_email='tom@swirly.com',
         url='https://github.com/rec/wolk',
@@ -28,6 +37,6 @@ if __name__ == '__main__':
         long_description=open('README.rst').read(),
         license='MIT',
         classifiers=_classifiers,
-        keywords=['testing', 'modules'],
-        scripts=['wolk.py'],
+        install_requires=REQUIREMENTS,
+        keywords=['os.walk'],
     )
