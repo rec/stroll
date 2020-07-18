@@ -1,11 +1,11 @@
 """Better directory tree generator"""
 from pathlib import Path
-import clod
 import fnmatch
 import functools
 import inspect
 import os
 import re
+import xmod
 
 __version__ = '0.9.0'
 __all__ = 'wolk', 'inv', 'python', 'python_source'
@@ -15,6 +15,7 @@ def dotfile(filename):
     return filename.startswith('.')
 
 
+@xmod
 def wolk(
     top,
     topdown=True,
@@ -159,6 +160,3 @@ def inv(fn):
         return not fn(*args)
 
     return wrapped
-
-
-clod(wolk, __name__)
