@@ -73,27 +73,32 @@ def wolk(
 
 
 def _resolve(r):
-    if isinstance(r, str) or callable(r):
-        r = (r,)
+    def wrap(match):
+        if isinstance(match, str):
+            return wrap_string(match)
 
-    matchers = [_wrap(f) for f in r]
-    return lambda *a: any(m(*a) for m in matchers)
+        assert callable(match)
+        return wrap_callable(match)
 
-
-def _wrap(matcher):
-    if isinstance(matcher, str):
-        match = re.compile(fnmatch.translate(matcher)).match
+    def wrap_string(match):
+        fmatch = re.compile(fnmatch.translate(match)).match
 
         def wrapped(filename, directory, root):
-            return match(os.path.join(directory, filename))
+            return fmatch(os.path.join(directory, filename))
 
         return wrapped
 
-    assert callable(matcher)
-    p = _param_count(matcher)
-    if p == 3:
-        return matcher
-    return lambda *args: matcher(*args[:p])
+    def wrap_callable(match):
+        p = _param_count(match)
+        if p == 3:
+            return match
+        return lambda *args: match(*args[:p])
+
+    if isinstance(r, str) or callable(r):
+        r = (r,)
+
+    matchers = [wrap(f) for f in r]
+    return lambda *a: any(m(*a) for m in matchers)
 
 
 def matcher(f):
