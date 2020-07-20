@@ -30,8 +30,8 @@ def wolk(
     with_root=None,
     sort=True,
 ):
-    inc = include and _resolve(include)
-    exc = _resolve(exclude or ())
+    inc = _resolve(include, match_on_empty=True)
+    exc = _resolve(exclude, match_on_empty=False)
 
     roots = [top] if isinstance(top, (str, Path)) else top
 
@@ -59,14 +59,14 @@ def wolk(
                     else:
                         yield str(f)
 
-            def accept(file):
-                args = file, directory, root
-                return not exc(*args) and (inc is None or inc(*args))
+            def accept(is_dir, file):
+                a = file, directory, root
+                return inc(is_dir, *a) and not exc(is_dir, *a)
 
-            yield from results(f for f in files if accept(f))
+            yield from results(f for f in files if accept(False, f))
 
             if topdown or directories:
-                subs = (f for f in sub_dirs if accept(f + '/'))
+                subs = (f for f in sub_dirs if accept(True, f + '/'))
                 if topdown:
                     sub_dirs[:] = subs
                     subs = sub_dirs
@@ -74,7 +74,7 @@ def wolk(
                     yield from results(subs)
 
 
-def _resolve(pattern):
+def _resolve(pattern, match_on_empty):
     matchers = [], []
 
     def wrap(match):
@@ -84,10 +84,10 @@ def _resolve(pattern):
             matchers[0].append(fn)
             matchers[1].append(fn)
         else:
-            fmatch = re.compile(fnmatch.translate(match)).match
+            fmatch = re.compile(fnmatch.translate(match))
 
             def wrapped(filename, directory, root):
-                return fmatch(os.path.join(directory, filename))
+                return fmatch.match(os.path.join(directory, filename))
 
             is_dir = match.endswith(os.path.sep)
             matchers[is_dir].append(wrapped)
@@ -97,11 +97,24 @@ def _resolve(pattern):
     elif isinstance(pattern, str):
         pattern = pattern.split(FILE_SEPARATOR)
 
-    for match in pattern:
-        wrap(match)
+    for m in pattern or ():
+        wrap(m)
 
-    matchers = matchers[0] + matchers[1]
-    return lambda *a: any(m(*a) for m in matchers)
+    if match_on_empty:
+        for m in matchers:
+            if not m:
+                m.append(lambda *a: True)
+
+    def matcher(is_dir, *args):
+        # return any(m(*args) for m in matchers[is_dir])
+        print('MATCHER', is_dir, *args)
+        for m in matchers[is_dir]:
+            result = m(*args)
+            print('-->', m, result)
+            if result:
+                return result
+
+    return matcher
 
 
 def matcher(f):

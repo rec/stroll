@@ -142,6 +142,11 @@ class TestWolkTopDown(TestCase):
         ]
         assert expected == actual
 
+    def test_inc_exc(self):
+        actual = list(wolk('.', exclude='a/|top/', include='*/drie'))
+        expected = ['b/dd/twee/een/two/drie']
+        assert expected == actual
+
 
 class TestParamCount(TestCase):
     def test_simple(self):
