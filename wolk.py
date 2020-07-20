@@ -72,6 +72,30 @@ def wolk(
                     yield from results(subs)
 
 
+def _resolve(r):
+    if isinstance(r, str) or callable(r):
+        r = (r,)
+
+    matchers = [_wrap(f) for f in r]
+    return lambda *a: any(m(*a) for m in matchers)
+
+
+def _wrap(matcher):
+    if isinstance(matcher, str):
+        match = re.compile(fnmatch.translate(matcher)).match
+
+        def wrapped(filename, directory, root):
+            return match(os.path.join(directory, filename))
+
+        return wrapped
+
+    assert callable(matcher)
+    p = _param_count(matcher)
+    if p == 3:
+        return matcher
+    return lambda *args: matcher(*args[:p])
+
+
 def matcher(f):
     @functools.wraps(f)
     def outer(*args):
@@ -111,22 +135,6 @@ python = functools.partial(wolk, exclude=EXCLUDE_PYTHON)
 python_source = functools.partial(wolk, include='*.py', exclude=EXCLUDE_PYTHON)
 
 
-def _wrap(matcher):
-    if isinstance(matcher, str):
-        match = re.compile(fnmatch.translate(matcher)).match
-
-        def wrapped(filename, directory, root):
-            return match(os.path.join(directory, filename))
-
-        return wrapped
-
-    assert callable(matcher)
-    p = _param_count(matcher)
-    if p == 3:
-        return matcher
-    return lambda *args: matcher(*args[:p])
-
-
 def _param_count(fn, n=3):
     i = -1
 
@@ -144,14 +152,6 @@ def _param_count(fn, n=3):
             raise ValueError('Patterns can have at most %s arguments' % n)
 
     return min(i + 1, n)
-
-
-def _resolve(r):
-    if isinstance(r, str) or callable(r):
-        r = (r,)
-
-    matchers = [_wrap(f) for f in r]
-    return lambda *a: any(m(*a) for m in matchers)
 
 
 def inv(fn):
