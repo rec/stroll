@@ -10,6 +10,8 @@ import xmod
 __version__ = '0.9.0'
 __all__ = 'wolk', 'inv', 'python', 'python_source'
 
+FILE_SEPARATOR = '|'
+
 
 def dotfile(filename):
     return filename.startswith('.')
@@ -72,32 +74,33 @@ def wolk(
                     yield from results(subs)
 
 
-def _resolve(r):
+def _resolve(pattern):
+    matchers = [], []
+
     def wrap(match):
-        if isinstance(match, str):
-            return wrap_string(match)
+        if callable(match):
+            p = _param_count(match)
+            fn = match if p == 3 else lambda *args: match(*args[:p])
+            matchers[0].append(fn)
+            matchers[1].append(fn)
+        else:
+            fmatch = re.compile(fnmatch.translate(match)).match
 
-        assert callable(match)
-        return wrap_callable(match)
+            def wrapped(filename, directory, root):
+                return fmatch(os.path.join(directory, filename))
 
-    def wrap_string(match):
-        fmatch = re.compile(fnmatch.translate(match)).match
+            is_dir = match.endswith(os.path.sep)
+            matchers[is_dir].append(wrapped)
 
-        def wrapped(filename, directory, root):
-            return fmatch(os.path.join(directory, filename))
+    if callable(pattern):
+        pattern = (pattern,)
+    elif isinstance(pattern, str):
+        pattern = pattern.split(FILE_SEPARATOR)
 
-        return wrapped
+    for match in pattern:
+        wrap(match)
 
-    def wrap_callable(match):
-        p = _param_count(match)
-        if p == 3:
-            return match
-        return lambda *args: match(*args[:p])
-
-    if isinstance(r, str) or callable(r):
-        r = (r,)
-
-    matchers = [wrap(f) for f in r]
+    matchers = matchers[0] + matchers[1]
     return lambda *a: any(m(*a) for m in matchers)
 
 
