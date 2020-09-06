@@ -1,3 +1,12 @@
+## v0.9.1 - 20/09/06
+
+* Add MANIFEST.in
+* Separate patterns for files and directories
+* Full test coverage of wolk.py
+* Use xlod
+* Fix .coveragerc
+* Use simplified tdir calls
+
 ## v0.9.0 - 20/05/27
 
 * First release
