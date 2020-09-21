@@ -106,13 +106,7 @@ def _resolve(pattern, match_on_empty):
                 m.append(lambda *a: True)
 
     def matcher(is_dir, *args):
-        # return any(m(*args) for m in matchers[is_dir])
-        print('MATCHER', is_dir, *args)
-        for m in matchers[is_dir]:
-            result = m(*args)
-            print('-->', m, result)
-            if result:
-                return result
+        return any(m(*args) for m in matchers[is_dir])
 
     return matcher
 
