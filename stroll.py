@@ -31,7 +31,7 @@ import os
 import re
 import xmod
 
-__version__ = '0.10.0'
+__version__ = '0.11.0'
 __all__ = 'stroll', 'inv', 'python', 'python_source'
 
 FILE_SEPARATOR = ','
