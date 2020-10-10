@@ -31,7 +31,7 @@ import os
 import re
 import xmod
 
-__version__ = '0.9.3'
+__version__ = '0.10.0'
 __all__ = 'wolk', 'inv', 'python', 'python_source'
 
 FILE_SEPARATOR = ','
