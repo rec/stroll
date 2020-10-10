@@ -138,8 +138,8 @@ def wolk(
             m = separator.join(str(i) for i in missing)
             raise FileNotFoundError(2, 'No such %s: %s' % (d, m))
 
-    inc = _Matcher(include, match_on_empty=True)
-    exc = _Matcher(exclude, match_on_empty=False)
+    inc = _Pattern(include, match_on_empty=True)
+    exc = _Pattern(exclude, match_on_empty=False)
 
     if suffix is not None:
         # The empty string means "requires no suffix"
@@ -184,10 +184,38 @@ def wolk(
                     yield from results(subs)
 
 
-class _Matcher:
+class _Pattern:
     def __init__(self, pattern, match_on_empty):
-        self.file_matcher, self.dir_matcher = _resolve(pattern)
         self.match_on_empty = match_on_empty
+        self.file_matcher, self.dir_matcher = [], []
+
+        def wrap_callable(match):
+            p = _param_count(match)
+            fn = match if p == 3 else lambda *args: match(*args[:p])
+            self.file_matcher.append(fn)
+            self.dir_matcher.append(fn)
+
+        def wrap_re(match):
+            fmatch = re.compile(fnmatch.translate(match))
+
+            def wrapped(filename, directory, root):
+                return fmatch.match(os.path.join(directory, filename))
+
+            is_dir = match.endswith(os.path.sep)
+            matcher = self.dir_matcher if is_dir else self.file_matcher
+            matcher.append(wrapped)
+
+        if callable(pattern):
+            pattern = (pattern,)
+
+        elif isinstance(pattern, str):
+            pattern = pattern.split(FILE_SEPARATOR)
+
+        for m in pattern or ():
+            if callable(m):
+                wrap_callable(m)
+            else:
+                wrap_re(m)
 
     def __call__(self, is_dir, *args):
         matcher = self.dir_matcher if is_dir else self.file_matcher
@@ -195,40 +223,6 @@ class _Matcher:
             return self.match_on_empty
 
         return any(m(*args) for m in matcher)
-
-
-def _resolve(pattern):
-    file_matcher, dir_matcher = [], []
-
-    def wrap_callable(match):
-        p = _param_count(match)
-        fn = match if p == 3 else lambda *args: match(*args[:p])
-        file_matcher.append(fn)
-        dir_matcher.append(fn)
-
-    def wrap_re(match):
-        fmatch = re.compile(fnmatch.translate(match))
-
-        def wrapped(filename, directory, root):
-            return fmatch.match(os.path.join(directory, filename))
-
-        is_dir = match.endswith(os.path.sep)
-        matcher = dir_matcher if is_dir else file_matcher
-        matcher.append(wrapped)
-
-    if callable(pattern):
-        pattern = (pattern,)
-
-    elif isinstance(pattern, str):
-        pattern = pattern.split(FILE_SEPARATOR)
-
-    for m in pattern or ():
-        if callable(m):
-            wrap_callable(m)
-        else:
-            wrap_re(m)
-
-    return file_matcher, dir_matcher
 
 
 def matcher(f):
