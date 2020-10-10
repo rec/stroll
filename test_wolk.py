@@ -69,6 +69,50 @@ class TestWolk2(TestCase):
         assert actual == expected
 
 
+class TestError(TestCase):
+    def test_error(self):
+        with self.assertRaises(FileNotFoundError) as m:
+            wolk("doesn't-exist-at-all")
+        expected = '[Errno 2] No such directory: doesn\'t-exist-at-all'
+        assert str(m.exception) == expected
+
+    def test_errors(self):
+        with self.assertRaises(FileNotFoundError) as m:
+            wolk('XXXX,YYYY')
+        expected = '[Errno 2] No such directories: XXXX,YYYY'
+        assert str(m.exception) == expected
+
+    def test_ignore_errors(self):
+        actual = wolk('XXXX,YYYY', ignore_missing_roots=True)
+        expected = []
+        assert actual == expected
+
+    @tdir(top=['a', 'b', 'c'])
+    def test_ignore_errors2(self):
+        actual = wolk('XXXX,top,YYYY', ignore_missing_roots=True)
+        expected = ['top/a', 'top/b', 'top/c']
+        assert actual == expected
+
+
+@tdir(
+    'top',
+    a=('foo.py', 'bar.py', '__init__.py', 'README.md'),
+    b=('gong.py', 'bong.py', '__init__.py', 'notes.txt'),
+)
+class TestSuffix(TestCase):
+    def test_python(self):
+        actual = wolk('.', suffix='.py')
+        expected = [
+            'a/__init__.py',
+            'a/bar.py',
+            'a/foo.py',
+            'b/__init__.py',
+            'b/bong.py',
+            'b/gong.py',
+        ]
+        assert actual == expected
+
+
 @tdir(
     'top',
     a=dict(foo='bar', aa=dict(one='1', two=dict(doh='re'))),
@@ -168,7 +212,7 @@ class TestMultipleRoots(TestCase):
             'b/dd/een',
             'b/dd/twee/een/two/drie',
         ]
-        for roots in 'a:b', ['a', 'b'], (i for i in 'ab'):
+        for roots in 'a,b', ['a', 'b'], (i for i in 'ab'):
             actual = wolk(roots)
             assert actual == expected
 

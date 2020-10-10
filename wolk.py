@@ -12,6 +12,9 @@ Drop-in substitute for ``os.path.walk()`` with additional features:
 
 * Can exclude or include files flexibly by pattern or function
 
+* Raises ``FileNotFoundError`` if a root directory doesn't exist, instead
+  of silently doing nothing like ``os.walk``.
+
 * Excludes dotfiles by default
 
 * Two special patterns to match all files in a Python project,
@@ -31,7 +34,7 @@ import xmod
 __version__ = '0.9.3'
 __all__ = 'wolk', 'inv', 'python', 'python_source'
 
-FILE_SEPARATOR = '|'
+FILE_SEPARATOR = ','
 
 
 def dotfile(filename):
@@ -50,6 +53,9 @@ def wolk(
     relative=False,
     with_root=None,
     sort=True,
+    suffix=None,
+    separator=FILE_SEPARATOR,
+    ignore_missing_roots=False,
 ):
     """
     Directory tree generator that improves on ``os.walk``.
@@ -70,7 +76,6 @@ def wolk(
 
         for f in wolk.python_source('/code/project'):
             assert f.suffix == '.py'
-
 
     ARGUMENTS
       topdown
@@ -112,27 +117,39 @@ def wolk(
 
       sort
 
+      suffix
 
-
+      ignore_missing_roots
     """
-    inc = _resolve(include, match_on_empty=True)
-    exc = _resolve(exclude, match_on_empty=False)
+    def split_file(x, to_path):
+        if isinstance(x, Path):
+            x = [str(x)]
+        elif isinstance(x, str):
+            x = x.split(separator)
+        if to_path:
+            return [Path(i).expanduser() for i in x]
+        return list(x)
 
-    if isinstance(roots, str):
-        roots = roots.split(':')
-    elif isinstance(roots, Path):
-        roots = [roots]
-    else:
-        try:
-            len(roots)
-        except Exception:
-            roots = list(roots)
+    roots = split_file(roots, True)
+    if not ignore_missing_roots:
+        missing = [f for f in roots if not f.exists()]
+        if missing:
+            d = 'directory' if len(missing) == 1 else 'directories'
+            m = separator.join(str(i) for i in missing)
+            raise FileNotFoundError(2, 'No such %s: %s' % (d, m))
+
+    inc = _Matcher(include, match_on_empty=True)
+    exc = _Matcher(exclude, match_on_empty=False)
+
+    if suffix is not None:
+        # The empty string means "requires no suffix"
+        suffixes = [''] if suffix == '' else split_file(suffix, False)
+        inc.file_matcher.append(match_suffix(*suffixes))
 
     if relative and with_root is None:
         with_root = len(roots) != 1
 
     for root in roots:
-        root = Path(root).expanduser()
         walk = os.walk(str(root), topdown, onerror, followlinks)
 
         for directory, sub_dirs, files in walk:
@@ -167,41 +184,51 @@ def wolk(
                     yield from results(subs)
 
 
-def _resolve(pattern, match_on_empty):
-    matchers = [], []
+class _Matcher:
+    def __init__(self, pattern, match_on_empty):
+        self.file_matcher, self.dir_matcher = _resolve(pattern)
+        self.match_on_empty = match_on_empty
 
-    def wrap(match):
-        if callable(match):
-            p = _param_count(match)
-            fn = match if p == 3 else lambda *args: match(*args[:p])
-            matchers[0].append(fn)
-            matchers[1].append(fn)
-        else:
-            fmatch = re.compile(fnmatch.translate(match))
+    def __call__(self, is_dir, *args):
+        matcher = self.dir_matcher if is_dir else self.file_matcher
+        if not matcher:
+            return self.match_on_empty
 
-            def wrapped(filename, directory, root):
-                return fmatch.match(os.path.join(directory, filename))
+        return any(m(*args) for m in matcher)
 
-            is_dir = match.endswith(os.path.sep)
-            matchers[is_dir].append(wrapped)
+
+def _resolve(pattern):
+    file_matcher, dir_matcher = [], []
+
+    def wrap_callable(match):
+        p = _param_count(match)
+        fn = match if p == 3 else lambda *args: match(*args[:p])
+        file_matcher.append(fn)
+        dir_matcher.append(fn)
+
+    def wrap_re(match):
+        fmatch = re.compile(fnmatch.translate(match))
+
+        def wrapped(filename, directory, root):
+            return fmatch.match(os.path.join(directory, filename))
+
+        is_dir = match.endswith(os.path.sep)
+        matcher = dir_matcher if is_dir else file_matcher
+        matcher.append(wrapped)
 
     if callable(pattern):
         pattern = (pattern,)
+
     elif isinstance(pattern, str):
         pattern = pattern.split(FILE_SEPARATOR)
 
     for m in pattern or ():
-        wrap(m)
+        if callable(m):
+            wrap_callable(m)
+        else:
+            wrap_re(m)
 
-    if match_on_empty:
-        for m in matchers:
-            if not m:
-                m.append(lambda *a: True)
-
-    def matcher(is_dir, *args):
-        return any(m(*args) for m in matchers[is_dir])
-
-    return matcher
+    return file_matcher, dir_matcher
 
 
 def matcher(f):
