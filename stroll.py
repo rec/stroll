@@ -1,5 +1,5 @@
 """
-🚶 wolk: a better os.path.walk 🚶
+🚶 stroll: a better os.path.walk 🚶
 -------------------------------------
 
 Drop-in substitute for ``os.path.walk()`` with additional features:
@@ -32,7 +32,7 @@ import re
 import xmod
 
 __version__ = '0.10.0'
-__all__ = 'wolk', 'inv', 'python', 'python_source'
+__all__ = 'stroll', 'inv', 'python', 'python_source'
 
 FILE_SEPARATOR = ','
 
@@ -42,7 +42,7 @@ def dotfile(filename):
 
 
 @xmod
-def wolk(
+def stroll(
     roots,
     topdown=True,
     onerror=None,
@@ -68,13 +68,13 @@ def wolk(
 
     .. code-block:: python
 
-        import wolk
+        import stroll
 
-        for f in wolk('~/foo:~/bar'):
+        for f in stroll('~/foo:~/bar'):
             if f.suffix == '.txt':
                 print(f)
 
-        for f in wolk.python_source('/code/project'):
+        for f in stroll.python_source('/code/project'):
             assert f.suffix == '.py'
 
     ARGUMENTS
@@ -284,8 +284,10 @@ EXCLUDE_PYTHON = (
 )
 
 
-python = functools.partial(wolk, exclude=EXCLUDE_PYTHON)
-python_source = functools.partial(wolk, include='*.py', exclude=EXCLUDE_PYTHON)
+python = functools.partial(stroll, exclude=EXCLUDE_PYTHON)
+python_source = functools.partial(
+    stroll, include='*.py', exclude=EXCLUDE_PYTHON
+)
 
 
 def _param_count(fn, n=3):

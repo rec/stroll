@@ -20,20 +20,20 @@ REQUIREMENTS = Path('requirements.txt').read_text().splitlines()
 
 
 def _version():
-    with open('wolk.py') as fp:
+    with open('stroll.py') as fp:
         line = next(i for i in fp if i.startswith('__version__'))
         return line.strip().split()[-1].strip("'")
 
 
 if __name__ == '__main__':
     setup(
-        name='wolk',
+        name='stroll',
         version=_version(),
         author='Tom Ritchford',
         author_email='tom@swirly.com',
-        url='https://github.com/rec/wolk',
+        url='https://github.com/rec/stroll',
         tests_require=['pytest'],
-        py_modules=['wolk'],
+        py_modules=['stroll'],
         description='Better os.walk',
         long_description=open('README.rst').read(),
         license='MIT',

@@ -1,4 +1,4 @@
-🚶 wolk: a better os.path.walk 🚶
+🚶 stroll: a better os.path.walk 🚶
 -------------------------------------
 
 Drop-in substitute for ``os.path.walk()`` with additional features:
