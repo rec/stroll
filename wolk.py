@@ -1,4 +1,25 @@
-"""Better directory tree generator"""
+"""
+🚶 wolk: a better os.path.walk 🚶
+-------------------------------------
+
+Drop-in substitute for ``os.path.walk()`` with additional features:
+
+* Walks over multiple roots
+
+* Yields ``pathlib.Path()`` and not ``str``
+
+* Yields full absolute paths by default
+
+* Can exclude or include files flexibly by pattern or function
+
+* Excludes dotfiles by default
+
+* Two special patterns to match all files in a Python project,
+  or all Python sound files, are included
+
+The last one is really useful because Python tends to leave all sorts of copies
+of your code in directories like ``build/``, ``dist/`` or ``*.egg/``.
+"""
 from pathlib import Path
 import fnmatch
 import functools
@@ -19,7 +40,7 @@ def dotfile(filename):
 
 @xmod
 def wolk(
-    top,
+    roots,
     topdown=True,
     onerror=None,
     followlinks=False,
@@ -33,7 +54,15 @@ def wolk(
     inc = _resolve(include, match_on_empty=True)
     exc = _resolve(exclude, match_on_empty=False)
 
-    roots = [top] if isinstance(top, (str, Path)) else top
+    if isinstance(roots, str):
+        roots = roots.split(':')
+    elif isinstance(roots, Path):
+        roots = [roots]
+    else:
+        try:
+            len(roots)
+        except Exception:
+            roots = list(roots)
 
     if relative and with_root is None:
         with_root = len(roots) != 1

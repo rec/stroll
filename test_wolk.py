@@ -153,6 +153,26 @@ class TestWolkTopDown(TestCase):
         assert expected == actual
 
 
+@tdir(
+    'top',
+    a=dict(foo='bar', aa=dict(one='1', two=dict(doh='re'))),
+    b=dict(oom='2', dd=dict(een='1', twee=dict(een=dict(two=dict(drie='f'))))),
+)
+class TestMultipleRoots(TestCase):
+    def test_multiple(self):
+        expected = [
+            'a/foo',
+            'a/aa/one',
+            'a/aa/two/doh',
+            'b/oom',
+            'b/dd/een',
+            'b/dd/twee/een/two/drie',
+        ]
+        for roots in 'a:b', ['a', 'b'], (i for i in 'ab'):
+            actual = wolk(roots)
+            assert actual == expected
+
+
 class TestParamCount(TestCase):
     def test_simple(self):
         count = _wolk._param_count
