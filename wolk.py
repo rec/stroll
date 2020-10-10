@@ -104,22 +104,46 @@ def wolk(
         changes the current directory, and assumes that the client doesn't
         either.
 
-
       include
+        A list of patterns that files must match.
+
+        Patterns can either be a Unix-style *? matching string,
+        or a Python callable which returns True if the file matches
 
       exclude
+        A list of patterns that files cannot match (and will skip).
+
+        Patterns can either be a Unix-style *? matching string,
+        or a Python callable which returns True if the file matches.
 
       directories
+        If True, both files and directories are yielded.
+        If False, the default, only files are yielded
 
       relative
+        If True, file paths are relative to the root they were found in.
+        If False, the default, absolute paths are generated.
 
       with_root
+        If True, pairs looking like (root, filepath) are generated.
+        If False, just file paths are generated.
+        If None, the default, pairs are generated only if there is more than
+        one root *and* relative paths are selected.
 
       sort
+        If True, files or subdirectories are generated in sorted order.
+        If False, the default, files or subdirectories are generated in
+        whatever order the operating system gives them, which might be
+        sorted anyway
 
       suffix
+         If None, the default, there is no suffix matching.  Note that
+         ``include`` and ``exclude`` might match suffixes independently.
 
       ignore_missing_roots
+        If True, root directories that do not exist are silently skipped.
+        If False, the default, all roots are checked for existence before
+        any files are generated.
     """
     def split_file(x, to_path):
         if isinstance(x, Path):
