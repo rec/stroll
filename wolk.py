@@ -17,7 +17,7 @@ Drop-in substitute for ``os.path.walk()`` with additional features:
 * Two special patterns to match all files in a Python project,
   or all Python sound files, are included
 
-The last one is really useful because Python tends to leave all sorts of copies
+The last one is useful because Python tends to leave all sorts of copies
 of your code in directories like ``build/``, ``dist/`` or ``*.egg/``.
 """
 from pathlib import Path
@@ -51,6 +51,70 @@ def wolk(
     with_root=None,
     sort=True,
 ):
+    """
+    Directory tree generator that improves on ``os.walk``.
+
+    For each directory in ``roots``, walk through each file in each
+    subdirectory and yield a Path to that file.  Ignores dotfiles by default.
+
+    EXAMPLE
+    ^^^^^^^
+
+    .. code-block:: python
+
+        import wolk
+
+        for f in wolk('~/foo:~/bar'):
+            if f.suffix == '.txt':
+                print(f)
+
+        for f in wolk.python_source('/code/project'):
+            assert f.suffix == '.py'
+
+
+    ARGUMENTS
+      topdown
+        If optional arg ``topdown`` is true or not specified, the ``Path`` to a
+        directory is generated before any of its subdirectories - directories
+        are generated top-down.
+
+        If ``topdown`` is false, the Path to a directory is generated after all
+        of its subdirectories - directories are generated bottom up.
+
+      onerror
+        By default errors from the os.scandir() call are ignored.  If
+        optional arg 'onerror' is specified, it should be a function; it
+        will be called with one argument, an OSError instance.  It can
+        report the error to continue with the walk, or raise the exception
+        to abort the walk.  Note that the filename is available as the
+        filename attribute of the exception object.
+
+      followlinks
+        By default, os.walk does not follow symbolic links to subdirectories on
+        systems that support them.  In order to get this functionality, set the
+        optional argument 'followlinks' to true.
+
+        Caution:  if you pass a relative pathname for top, don't change the
+        current working directory between resumptions of walk.  walk never
+        changes the current directory, and assumes that the client doesn't
+        either.
+
+
+      include
+
+      exclude
+
+      directories
+
+      relative
+
+      with_root
+
+      sort
+
+
+
+    """
     inc = _resolve(include, match_on_empty=True)
     exc = _resolve(exclude, match_on_empty=False)
 
@@ -68,8 +132,8 @@ def wolk(
         with_root = len(roots) != 1
 
     for root in roots:
-        walk = os.walk(root, topdown, onerror, followlinks)
-        root = Path(root)
+        root = Path(root).expanduser()
+        walk = os.walk(str(root), topdown, onerror, followlinks)
 
         for directory, sub_dirs, files in walk:
             if sort:
