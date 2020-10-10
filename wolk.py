@@ -55,9 +55,9 @@ def wolk(
                     if relative:
                         f = f.relative_to(root)
                     if with_root:
-                        yield str(root), str(f)
+                        yield root, f
                     else:
-                        yield str(f)
+                        yield f
 
             def accept(is_dir, file):
                 a = file, directory, root
