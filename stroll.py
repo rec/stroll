@@ -64,7 +64,6 @@ def stroll(
     subdirectory and yield a Path to that file.  Ignores dotfiles by default.
 
     EXAMPLE
-    ^^^^^^^
 
     .. code-block:: python
 
@@ -107,13 +106,13 @@ def stroll(
       include
         A list of patterns that files must match.
 
-        Patterns can either be a Unix-style *? matching string,
+        Patterns can either be a Unix-style match string,
         or a Python callable which returns True if the file matches
 
       exclude
         A list of patterns that files cannot match (and will skip).
 
-        Patterns can either be a Unix-style *? matching string,
+        Patterns can either be a Unix-style match string,
         or a Python callable which returns True if the file matches.
 
       directories
@@ -145,6 +144,7 @@ def stroll(
         If False, the default, all roots are checked for existence before
         any files are generated.
     """
+
     def split_file(x, to_path):
         if isinstance(x, Path):
             x = [str(x)]
@@ -295,7 +295,6 @@ def _param_count(fn, n=3):
 
     for i, p in enumerate(inspect.signature(fn).parameters.values()):
         if p.kind in (p.KEYWORD_ONLY, p.VAR_KEYWORD):  # pragma: no cover
-
             return i
 
         if p.kind is p.VAR_POSITIONAL:
