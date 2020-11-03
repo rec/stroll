@@ -35,6 +35,7 @@ __version__ = '0.11.0'
 __all__ = 'stroll', 'inv', 'python', 'python_source'
 
 FILE_SEPARATOR = ','
+_DOKS = {}
 
 
 def dotfile(filename):
@@ -283,6 +284,18 @@ EXCLUDE_PYTHON = (
     match('__pycache__/'),
 )
 
+_DOKS[
+    EXCLUDE_PYTHON
+] = """
+EXCLUDE_PYTHON is a sequence of matchers for uninteresting files in a
+Python subdirectory.
+
+These are files that you usually don't want to look at:
+
+  * dotfiles, files that start with a . , anywhere
+  * .egg-info/ and __pycache__/ anywhere
+  * build/, dist/ and htmlcov/ at the top level
+"""
 
 python = functools.partial(stroll, exclude=EXCLUDE_PYTHON)
 python_source = functools.partial(
