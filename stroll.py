@@ -4,25 +4,36 @@
 
 Drop-in substitute for ``os.path.walk()`` with additional features:
 
+* Handles Unix-style globs or "star notation" like \\*.py
+
 * Walks over multiple roots
 
-* Yields ``pathlib.Path()`` and not ``str``
+* Yields ``pathlib.Path()`` instead of ``str``
 
 * Yields full absolute paths by default
 
 * Can exclude or include files flexibly by pattern or function
 
 * Raises ``FileNotFoundError`` if a root directory doesn't exist, instead
-  of silently doing nothing like ``os.walk``.
+  of silently doing nothing like ``os.walk`` does (bad feature!).
 
 * Excludes dotfiles by default
 
-* Two special patterns to match all files in a Python project,
-  or all Python sound files, are included
+* Includes two functions for ignoring generated files in a Python project:
 
-The last one is useful because Python tends to leave all sorts of copies
-of your code in directories like ``build/``, ``dist/`` or ``*.egg/``.
+  * The Python build, test and release cycle tend to leave genereted files in
+    places like build/ or __pycache__, and usually you want to ignore these
+
+  * ``stroll.python_source()`` iterates over Python source files
+
+  * ``stroll.python()`` iterates over all source files in a Python project
+
+  * The files and directories that are ignored are:
+      * files or directories that start with a .
+      * .egg-info/ and __pycache__/
+      * build/, dist/ and htmlcov/ at the top level only
 """
+
 from pathlib import Path
 import fnmatch
 import functools
@@ -32,7 +43,7 @@ import re
 import xmod
 
 __version__ = '0.11.0'
-__all__ = 'stroll', 'inv', 'python', 'python_source'
+__all__ = 'inv', 'python', 'python_source'
 
 FILE_SEPARATOR = ','
 _DOKS = {}
@@ -226,9 +237,10 @@ class _Pattern:
             def wrapped(filename, directory, root):
                 return fmatch.match(os.path.join(directory, filename))
 
-            is_dir = match.endswith(os.path.sep)
-            matcher = self.dir_matcher if is_dir else self.file_matcher
-            matcher.append(wrapped)
+            if match.endswith(os.path.sep):
+                self.dir_matcher.append(wrapped)
+            else:
+                self.file_matcher.append(wrapped)
 
         if callable(pattern):
             pattern = (pattern,)
@@ -280,27 +292,19 @@ def match_suffix(filename, directory, root, *suffixes):
 EXCLUDE_PYTHON = (
     dotfile,
     match_root('build/', 'dist/', 'htmlcov/'),
-    match_suffix('.egg-info/'),
+    match_suffix('.egg-info/', '.pyc'),
     match('__pycache__/'),
 )
-
-_DOKS[
-    EXCLUDE_PYTHON
-] = """
-EXCLUDE_PYTHON is a sequence of matchers for uninteresting files in a
-Python subdirectory.
-
-These are files that you usually don't want to look at:
-
-  * dotfiles, files that start with a . , anywhere
-  * .egg-info/ and __pycache__/ anywhere
-  * build/, dist/ and htmlcov/ at the top level
-"""
 
 python = functools.partial(stroll, exclude=EXCLUDE_PYTHON)
 python_source = functools.partial(
     stroll, include='*.py', exclude=EXCLUDE_PYTHON
 )
+
+_DOKS[python] = 'Iterate over a Python project, skipping generated files'
+_DOKS[
+    python_source
+] = 'Iterate over \\*.py files in a Python project, skipping generated files'
 
 
 def _param_count(fn, n=3):
