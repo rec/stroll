@@ -2,36 +2,39 @@
 🚶 stroll: a better os.path.walk 🚶
 -------------------------------------
 
-Drop-in substitute for ``os.path.walk()`` with additional features:
+`stroll` is a drop-in substitute for `os.path.walk()` with more features:
 
-* Handles Unix-style globs or "star notation" like \\*.py
+* Unix-style globs or "star notation" like \\*.py
 
 * Walks over multiple roots
 
-* Yields ``pathlib.Path()`` instead of ``str``
+* Calls expanduser to handle paths like `~/foo.txt`
+
+* Yields `pathlib.Path()` instead of `str`
 
 * Yields full absolute paths by default
 
 * Can exclude or include files flexibly by pattern or function
 
-* Raises ``FileNotFoundError`` if a root directory doesn't exist, instead
-  of silently doing nothing like ``os.walk`` does (bad feature!).
+* Raises `FileNotFoundError` if a root directory doesn't exist, instead
+  of silently doing nothing like `os.walk` does
 
 * Excludes dotfiles by default
 
 * Includes two functions for ignoring generated files in a Python project:
 
-  * The Python build, test and release cycle tend to leave genereted files in
-    places like build/ or __pycache__, and usually you want to ignore these
+  * The Python build, test and release cycle tend to leave generated files in
+    places like `build/` or `__pycache__/`, and usually you want to ignore
+    these
 
-  * ``stroll.python_source()`` iterates over Python source files
+  * `stroll.python_source()` iterates over Python source files
 
-  * ``stroll.python()`` iterates over all source files in a Python project
+  * `stroll.python()` iterates over all source files in a Python project
 
   * The files and directories that are ignored are:
-      * files or directories that start with a .
-      * .egg-info/ and __pycache__/
-      * build/, dist/ and htmlcov/ at the top level only
+      * files or directories that start with a `.`
+      * `.egg-info/` and `__pycache__/`
+      * `build/`, `dist/` and `htmlcov/` at the top level only
 """
 
 from pathlib import Path
@@ -70,9 +73,9 @@ def stroll(
     ignore_missing_roots=False,
 ):
     """
-    Directory tree generator that improves on ``os.walk``.
+    Directory walker that improves on `os.walk()`.
 
-    For each directory in ``roots``, walk through each file in each
+    For each directory in `roots`, walk through each file in each
     subdirectory and yield a Path to that file.  Ignores dotfiles by default.
 
     EXAMPLE
@@ -89,71 +92,75 @@ def stroll(
             assert f.suffix == '.py'
 
     ARGUMENTS
-      topdown
-        If optional arg ``topdown`` is true or not specified, the ``Path`` to a
+      roots
+        Either a list or tuple of strings, or a single string that is split
+        using `separator` (defaults to `,`, the comma).
+
+      topdown (argument to `os.walk`)
+        If optional arg `topdown` is true or not specified, the `Path` to a
         directory is generated before any of its subdirectories - directories
         are generated top-down.
 
-        If ``topdown`` is false, the Path to a directory is generated after all
+        If `topdown` is false, the Path to a directory is generated after all
         of its subdirectories - directories are generated bottom up.
 
-      onerror
-        By default errors from the os.scandir() call are ignored.  If
-        optional arg 'onerror' is specified, it should be a function; it
+      onerror (argument to `os.walk`)
+        By default errors from the `os.scandir()` call are ignored.  If
+        optional arg `onerror` is specified, it should be a function; it
         will be called with one argument, an OSError instance.  It can
         report the error to continue with the walk, or raise the exception
         to abort the walk.  Note that the filename is available as the
         filename attribute of the exception object.
 
-      followlinks
-        By default, os.walk does not follow symbolic links to subdirectories on
-        systems that support them.  In order to get this functionality, set the
-        optional argument 'followlinks' to true.
+      followlinks (argument to `os.walk`)
+        By default, `os.walk()` does not follow symbolic links to
+        subdirectories on systems that support them.  In order to get this
+        functionality, set the optional argument `followlinks` to true.
 
         Caution:  if you pass a relative pathname for top, don't change the
-        current working directory between resumptions of walk.  walk never
-        changes the current directory, and assumes that the client doesn't
-        either.
+        current working directory between resumptions of walk.  `os.walk()`
+        never changes the current directory, and assumes that the client
+        doesn't either.
 
       include
         A list of patterns that files must match.
 
         Patterns can either be a Unix-style match string,
-        or a Python callable which returns True if the file matches
+        or a Python callable which returns `True` if the file matches
 
       exclude
         A list of patterns that files cannot match (and will skip).
 
         Patterns can either be a Unix-style match string,
-        or a Python callable which returns True if the file matches.
+        or a Python callable which returns `True` if the file matches.
 
       directories
-        If True, both files and directories are yielded.
-        If False, the default, only files are yielded
+        If true, both files and directories are yielded.
+        If false, the default, only files are yielded
 
       relative
-        If True, file paths are relative to the root they were found in.
-        If False, the default, absolute paths are generated.
+        If true, file paths are relative to the root they were found in.
+        If false, the default, absolute paths are generated.
 
       with_root
-        If True, pairs looking like (root, filepath) are generated.
-        If False, just file paths are generated.
-        If None, the default, pairs are generated only if there is more than
+        If true, pairs looking like (root, filepath) are generated.
+        If `False`, just file paths are generated.
+        If `None`, the default, pairs are generated only if there is more than
         one root *and* relative paths are selected.
 
       sort
-        If True, files or subdirectories are generated in sorted order.
-        If False, the default, files or subdirectories are generated in
+        If true, files or subdirectories are generated in sorted order.
+        If false, the default, files or subdirectories are generated in
         whatever order the operating system gives them, which might be
         sorted anyway
 
       suffix
-         If None, the default, there is no suffix matching.  Note that
-         ``include`` and ``exclude`` might match suffixes independently.
+         If `None`, the default, there is no suffix matching.  Note that
+         `include` and `exclude` might match suffixes independently.
 
       ignore_missing_roots
-        If True, root directories that do not exist are silently skipped.
-        If False, the default, all roots are checked for existence before
+        If true, root directories that do not exist are silently skipped.
+        If false, the default, all roots are checked for existence before
         any files are generated.
     """
 
