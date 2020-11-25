@@ -45,7 +45,7 @@ import os
 import re
 import xmod
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 __all__ = 'inv', 'python', 'python_source'
 
 FILE_SEPARATOR = ','
