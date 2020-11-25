@@ -184,10 +184,11 @@ def stroll(
     inc = _Pattern(include, match_on_empty=True)
     exc = _Pattern(exclude, match_on_empty=False)
 
-    if suffix is not None:
+    if suffix is None:
+        suffixes = None
+    else:
         # The empty string means "requires no suffix"
-        suffixes = [''] if suffix == '' else split_file(suffix, False)
-        inc.file_matcher.append(match_suffix(*suffixes))
+        suffixes = set('' if suffix == '' else split_file(suffix, False))
 
     if relative and with_root is None:
         with_root = len(roots) != 1
@@ -205,12 +206,13 @@ def stroll(
             def results(files):
                 for f in files:
                     f = directory / f
-                    if relative:
-                        f = f.relative_to(root)
-                    if with_root:
-                        yield root, f
-                    else:
-                        yield f
+                    if not suffixes or f.suffix in suffixes:
+                        if relative:
+                            f = f.relative_to(root)
+                        if with_root:
+                            yield root, f
+                        else:
+                            yield f
 
             def accept(is_dir, file):
                 a = file, directory, root

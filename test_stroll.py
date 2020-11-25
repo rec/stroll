@@ -112,6 +112,11 @@ class TestSuffix(TestCase):
         ]
         assert actual == expected
 
+    def test_include(self):
+        actual = stroll('.', include='*o*', suffix='.py')
+        expected = ['a/foo.py', 'b/bong.py', 'b/gong.py']
+        assert actual == expected
+
 
 @tdir(
     'top',
