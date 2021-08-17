@@ -1,3 +1,8 @@
+## v1.1.0 - 21/08/17
+
+* Allow empty roots
+* Obsolete Python 3.4, 3.5
+
 ## v1.0.2 - 20/11/25
 
 * Handle suffix= correctly (fix #1)
