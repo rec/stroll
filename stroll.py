@@ -58,7 +58,7 @@ def dotfile(filename):
 
 @xmod
 def stroll(
-    roots,
+    roots='.',
     topdown=True,
     onerror=None,
     followlinks=False,
@@ -83,6 +83,9 @@ def stroll(
     .. code-block:: python
 
         import stroll
+
+        # Print all the files in the current directory
+        print(*list(stroll()
 
         for f in stroll('~/foo:~/bar'):
             if f.suffix == '.txt':

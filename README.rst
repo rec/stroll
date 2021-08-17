@@ -44,6 +44,7 @@ API
 .. code-block:: python
 
   stroll(
+       roots='.',
        topdown=True,
        onerror=None,
        followlinks=False,

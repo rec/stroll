@@ -20,6 +20,11 @@ class TestStroll(TestCase):
         expected = ['a', 'b', 'c']
         assert actual == expected
 
+    def test_very_simple(self):
+        actual = [str(i) for i in _stroll()]
+        expected = ['a', 'b', 'c']
+        assert actual == expected
+
     def test_simple(self):
         actual = stroll('.')
         expected = ['a', 'b', 'c']
